@@ -4,8 +4,8 @@ import { ClerkProvider } from '@clerk/nextjs'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'সহজ ডিজিটাল সেবা - Shohoj Digital Sheba',
-  description: 'বাংলাদেশের সহজ ডিজিটাল সেবা প্ল্যাটফর্ম। NID, স্মার্টকার্ড, TIN সহ ৪২টিরও বেশি সরকারি সেবা এক জায়গায়।',
+  title: 'স্মার্ট হাব বিডি - Smart Hub BD',
+  description: 'বাংলাদেশের স্মার্ট ডিজিটাল সেবা প্ল্যাটফর্ম। NID, স্মার্টকার্ড, TIN সহ ৪২টিরও বেশি সরকারি সেবা এক জায়গায়।',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

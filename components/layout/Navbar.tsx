@@ -49,12 +49,12 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <span className="hidden sm:flex items-center gap-2 font-medium">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            🇧🇩 বাংলাদেশের সহজ ডিজিটাল সেবা প্ল্যাটফর্ম
+            🇧🇩 বাংলাদেশের স্মার্ট ডিজিটাল সেবা প্ল্যাটফর্ম
           </span>
           <div className="flex items-center gap-2 ml-auto">
             <Phone size={11} style={{ color: '#fbbf24' }} />
-            <a href="tel:01625400511" className="font-bold tracking-wider transition-colors" style={{ color: '#fcd34d' }}>
-              01625400511
+            <a href="tel:01628329060" className="font-bold tracking-wider transition-colors" style={{ color: '#fcd34d' }}>
+              01628329060
             </a>
           </div>
         </div>
@@ -72,8 +72,8 @@ export default function Navbar() {
                     flexShrink: 0,
                 }}>
                     <Image
-                        src="/logo.jpeg"
-                        alt="Nagarik Seba Logo"
+                        src="/logo.png"
+                        alt="Smart Hub BD"
                         width={65}
                         height={65}
                         style={{ objectFit: "contain", borderRadius: "50%" }}

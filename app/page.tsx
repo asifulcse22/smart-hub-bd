@@ -91,8 +91,8 @@ export default function HomePage() {
           <div className="md:col-span-5 flex justify-center md:justify-end items-center order-1 md:order-2 w-full">
             <div className="relative w-full max-w-[260px] sm:max-w-[300px] md:max-w-full aspect-[4/4.2] rounded-[2.5rem] overflow-hidden dynamic-float-banner">
               <Image 
-                src="/bg.png"
-                alt="সহজ ডিজিটাল সেবা ব্যানার"
+                src="/cover.png"
+                alt="স্মার্ট হাব বিডি"
                 fill
                 sizes="(max-width: 768px) 100vw, 40vw"
                 className="object-cover scale-[1.02]"

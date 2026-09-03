@@ -146,8 +146,8 @@ export default function DashboardPage() {
           <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 36, height: 36, borderRadius: 10, background: '#006a4e', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 16, fontWeight: 'bold' }}>স</div>
             <div>
-              <p style={{ color: '#006a4e', fontWeight: 800, fontSize: 15, margin: 0, lineHeight: 1.2 }}>সহজ ডিজিটাল সেবা</p>
-              <p style={{ color: '#6b7280', fontSize: 9, fontWeight: 600, margin: 0, letterSpacing: '0.04em' }}>SHOHOJ DIGITAL SHEBA</p>
+              <p style={{ color: '#006a4e', fontWeight: 800, fontSize: 15, margin: 0, lineHeight: 1.2 }}>স্মার্ট হাব বিডি</p>
+              <p style={{ color: '#6b7280', fontSize: 9, fontWeight: 600, margin: 0, letterSpacing: '0.04em' }}>SMART HUB BD</p>
             </div>
           </Link>
 
@@ -169,7 +169,7 @@ export default function DashboardPage() {
               {profile?.fullName?.charAt(0)?.toUpperCase() || 'A'}
             </div>
             <div style={{ textAlign: 'left' }}>
-              <p style={{ fontSize: 12, fontWeight: 700, color: '#1f2937', margin: 0 }}>{profile?.fullName || 'Asiful Islam'}</p>
+              <p style={{ fontSize: 12, fontWeight: 700, color: '#1f2937', margin: 0 }}>{profile?.fullName || ''}</p>
               <p style={{ fontSize: 10, color: '#006a4e', fontWeight: 600, margin: 0 }}>ব্যালেন্স: ৳ {profile?.balance || 0}</p>
             </div>
           </div>

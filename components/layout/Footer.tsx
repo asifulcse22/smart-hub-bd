@@ -64,8 +64,8 @@ export default function Footer() {
                 <span style={{ color: 'white', fontWeight: '900', fontSize: '22px' }}>স</span>
               </div>
               <div>
-                <div style={{ color: 'white', fontWeight: '900', fontSize: '18px', lineHeight: 1.2 }}>সহজ ডিজিটাল সেবা</div>
-                <div style={{ fontSize: '10px', fontWeight: '600', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#34d399' }}>Shohoj Digital Sheba</div>
+                <div style={{ color: 'white', fontWeight: '900', fontSize: '18px', lineHeight: 1.2 }}>স্মার্ট হাব বিডি</div>
+                <div style={{ fontSize: '10px', fontWeight: '600', letterSpacing: '0.15em', textTransform: 'uppercase', color: '#34d399' }}>SMART HUB BD</div>
               </div>
             </div>
             <p style={{ fontSize: '14px', lineHeight: 1.7, marginBottom: '24px', color: '#9ca3af' }}>
@@ -76,7 +76,7 @@ export default function Footer() {
             <div style={{ display: 'flex', gap: '12px' }}>
               {[
                 { href: 'https://youtube.com', hoverBg: '#dc2626', Icon: Video },
-                { href: 'https://wa.me/8801625400511', hoverBg: '#16a34a', Icon: MessageCircle },
+                { href: 'https://wa.me/8801628329060', hoverBg: '#16a34a', Icon: MessageCircle },
               ].map(({ href, hoverBg, Icon }) => (
                 <a
                   key={href} href={href} target="_blank" rel="noopener noreferrer"
@@ -182,7 +182,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="https://wa.me/8801625400511"
+                  href="https://wa.me/8801628329060"
                   target="_blank" rel="noopener noreferrer"
                   style={{
                     display: 'flex', alignItems: 'center', gap: '10px',
@@ -229,7 +229,7 @@ export default function Footer() {
         }}>
           <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>
             © ২০২৬{' '}
-            <span style={{ fontWeight: '700', color: '#34d399' }}>সহজ ডিজিটাল সেবা</span>
+            <span style={{ fontWeight: '700', color: '#34d399' }}>স্মার্ট হাব বিডি</span>
             । সর্বস্বত্ব সংরক্ষিত।
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px', fontSize: '12px', fontWeight: '600', color: '#6b7280' }}>
