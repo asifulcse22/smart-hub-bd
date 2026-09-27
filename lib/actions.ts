@@ -8,54 +8,107 @@ import { hashPassword, comparePassword, createToken, getSession } from './auth'
 
 // --- Auth ---
 
+// বাংলা নম্বর (০১৭...) দিলে সেটিকে ইংরেজি (017...) নম্বরে রূপান্তর করার ফাংশন
+function normalizePhone(phone: string) {
+    const banglaDigits: { [key: string]: string } = {
+        '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
+        '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'
+    }
+    let cleaned = phone.trim().replace(/[০-৯]/g, d => banglaDigits[d] || d).replace(/\s|-/g, '')
+    if (cleaned.startsWith('+88')) cleaned = cleaned.replace('+88', '')
+    else if (cleaned.startsWith('8801')) cleaned = cleaned.substring(2)
+    return cleaned
+}
+
 export async function registerAction(formData: any) {
-    const { name, phone, password } = formData
-    
-    // Security: Input length limits to prevent DoS
-    if (typeof password !== 'string' || password.length > 72) return { success: false, message: 'পাসওয়ার্ডটি ৭২ ক্যারেক্টারের নিচে হতে হবে' }
-    if (typeof name !== 'string' || name.length > 100) return { success: false, message: 'নামটি ১০০ ক্যারেক্টারের নিচে হতে হবে' }
-    
-    let formattedPhone = phone.trim().replace(/\s/g, '')
-    if (formattedPhone.startsWith('+88')) formattedPhone = formattedPhone.replace('+88', '')
-
-    const existing = await db.select().from(profiles).where(eq(profiles.phone, formattedPhone)).limit(1)
-    if (existing.length > 0) return { success: false, message: 'এই নম্বরটি ইতিমধ্যে ব্যবহার করা হয়েছে' }
-
     try {
+        const { name, phone, password } = formData
+
+        if (!name || !phone || !password) {
+            return { success: false, message: 'সবগুলো ঘর পূরণ করুন' }
+        }
+        if (typeof password !== 'string' || password.length > 72) {
+            return { success: false, message: 'পাসওয়ার্ডটি ৭২ ক্যারেক্টারের নিচে হতে হবে' }
+        }
+        if (typeof name !== 'string' || name.length > 100) {
+            return { success: false, message: 'নামটি ১০০ ক্যারেক্টারের নিচে হতে হবে' }
+        }
+
+        if (!process.env.DATABASE_URL) {
+            return { success: false, message: 'সার্ভারে DATABASE_URL যুক্ত করা হয়নি!' }
+        }
+
+        const formattedPhone = normalizePhone(phone)
+
+        const existing = await db.select().from(profiles).where(eq(profiles.phone, formattedPhone)).limit(1)
+        if (existing.length > 0) {
+            return { success: false, message: 'এই নম্বরটি ইতিমধ্যে ব্যবহার করা হয়েছে' }
+        }
+
         const hashedPassword = await hashPassword(password)
         await db.insert(profiles).values({
-            fullName: name,
+            fullName: name.trim(),
             phone: formattedPhone,
             password: hashedPassword,
             balance: 0,
             role: 'user'
         })
+
         return { success: true }
-    } catch (err) {
-        console.error(err)
-        return { success: false, message: 'রেজিস্ট্রেশন করতে সমস্যা হয়েছে' }
+    } catch (err: any) {
+        console.error('Register Action Error:', err)
+        return {
+            success: false,
+            message: 'রেজিস্ট্রেশন করতে সমস্যা হয়েছে (ডাটাবেজ কানেকশন চেক করুন)'
+        }
     }
 }
 
 export async function loginAction(formData: any) {
-    const { phone, password } = formData
-    
-    // Security: Input length limit
-    if (typeof password !== 'string' || password.length > 72) return { success: false, message: 'পাসওয়ার্ড খুব বড়' }
+    try {
+        const { phone, password } = formData
 
-    let formattedPhone = phone.trim().replace(/\s/g, '')
-    if (formattedPhone.startsWith('+88')) formattedPhone = formattedPhone.replace('+88', '')
+        if (!phone || !password) {
+            return { success: false, message: 'মোবাইল নম্বর এবং পাসওয়ার্ড দিন' }
+        }
+        if (typeof password !== 'string' || password.length > 72) {
+            return { success: false, message: 'পাসওয়ার্ড খুব বড়' }
+        }
 
-    const user = await db.select().from(profiles).where(eq(profiles.phone, formattedPhone)).limit(1)
-    if (user.length === 0) return { success: false, message: 'অ্যাকাউন্ট পাওয়া যায়নি' }
+        if (!process.env.DATABASE_URL) {
+            return { success: false, message: 'সার্ভারে DATABASE_URL যুক্ত করা হয়নি!' }
+        }
 
-    const isMatch = await comparePassword(password, user[0].password)
-    if (!isMatch) return { success: false, message: 'পাসওয়ার্ড ভুল' }
+        const formattedPhone = normalizePhone(phone)
 
-    const token = await createToken({ id: user[0].id, phone: user[0].phone, role: user[0].role })
-    const cookieStore = await cookies()
-    cookieStore.set('session', token, { httpOnly: true, secure: true, sameSite: 'strict', maxAge: 60 * 60 * 24 * 7 })
-    return { success: true }
+        const user = await db.select().from(profiles).where(eq(profiles.phone, formattedPhone)).limit(1)
+        if (user.length === 0) {
+            return { success: false, message: 'এই নম্বরে কোনো অ্যাকাউন্ট পাওয়া যায়নি' }
+        }
+
+        const isMatch = await comparePassword(password, user[0].password)
+        if (!isMatch) {
+            return { success: false, message: 'পাসওয়ার্ড ভুল হয়েছে' }
+        }
+
+        const token = await createToken({ id: user[0].id, phone: user[0].phone, role: user[0].role })
+        const cookieStore = await cookies()
+        cookieStore.set('session', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/',
+            maxAge: 60 * 60 * 24 * 7
+        })
+
+        return { success: true }
+    } catch (err: any) {
+        console.error('Login Action Error:', err)
+        return {
+            success: false,
+            message: 'লগইন করতে সমস্যা হয়েছে (ডাটাবেজ কানেকশন চেক করুন)'
+        }
+    }
 }
 
 export async function logoutAction() {
