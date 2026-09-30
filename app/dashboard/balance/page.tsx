@@ -34,8 +34,8 @@ export default function RechargePage() {
     const maxWithdraw = 10000;
 
     const paymentNumbers = {
-        bKash: "01350084235",
-        Nagad: "01628329060"
+        bKash: "বিকাশের লিমিট শেষ শুধুমাত্র নগদে ব্যালেন্স প্রযোজ্য",
+        Nagad: "01781200267"
     };
 
     const handleCopy = (num: string, type: string) => {
