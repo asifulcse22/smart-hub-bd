@@ -53,7 +53,7 @@ export default function Navbar() {
           </span>
           <div className="flex items-center gap-2 ml-auto">
             <Phone size={11} style={{ color: '#fbbf24' }} />
-            <a href="tel:01992867758" className="font-bold tracking-wider transition-colors" style={{ color: '#fcd34d' }}>
+            <a href="https://wa.me/8801992867758" target="_blank" className="font-bold tracking-wider transition-colors" style={{ color: '#fcd34d' }}>
               01992867758
             </a>
           </div>
