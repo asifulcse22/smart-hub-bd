@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { ClerkProvider } from '@clerk/nextjs'
+
 // @ts-ignore: CSS import type declarations are not available in this project setup
 import './globals.css'
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider>
+    
       <html lang="bn">
         <head>
           <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -22,6 +22,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </body>
       </html>
-    </ClerkProvider>
+    
   )
 }

@@ -6,10 +6,8 @@ import { cookies } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { hashPassword, comparePassword, createToken, getSession } from './auth'
 
-// --- Auth ---
-
-// বাংলা নম্বর (০১৭...) দিলে সেটিকে ইংরেজি (017...) নম্বরে রূপান্তর করার ফাংশন
 function normalizePhone(phone: string) {
+    if (!phone) return ''
     const banglaDigits: { [key: string]: string } = {
         '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
         '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'
@@ -20,12 +18,12 @@ function normalizePhone(phone: string) {
     return cleaned
 }
 
-export async function registerAction(formData: any) {
+export async function registerAction(formData: { name: string; phone?: string; email?: string; password: string }) {
     try {
-        const { name, phone, password } = formData
+        const { name, phone, email, password } = formData
 
-        if (!name || !phone || !password) {
-            return { success: false, message: 'সবগুলো ঘর পূরণ করুন' }
+        if (!name || (!phone && !email) || !password) {
+            return { success: false, message: 'নাম, পাসওয়ার্ড এবং অন্তত মোবাইল নম্বর অথবা ইমেল দিন' }
         }
         if (typeof password !== 'string' || password.length > 72) {
             return { success: false, message: 'পাসওয়ার্ডটি ৭২ ক্যারেক্টারের নিচে হতে হবে' }
@@ -38,21 +36,44 @@ export async function registerAction(formData: any) {
             return { success: false, message: 'সার্ভারে DATABASE_URL যুক্ত করা হয়নি!' }
         }
 
-        const formattedPhone = normalizePhone(phone)
+        const formattedPhone = phone && phone.trim() !== '' ? normalizePhone(phone) : null
+        const formattedEmail = email && email.trim() !== '' ? email.trim().toLowerCase() : null
 
-        const existing = await db.select().from(profiles).where(eq(profiles.phone, formattedPhone)).limit(1)
-        if (existing.length > 0) {
-            return { success: false, message: 'এই নম্বরটি ইতিমধ্যে ব্যবহার করা হয়েছে' }
+        if (formattedPhone) {
+            const existingPhone = await db.select().from(profiles).where(eq(profiles.phone, formattedPhone)).limit(1)
+            if (existingPhone.length > 0) {
+                return { success: false, message: 'এই মোবাইল নম্বরটি ইতিমধ্যে ব্যবহার করা হয়েছে' }
+            }
+        }
+
+        if (formattedEmail) {
+            const existingEmail = await db.select().from(profiles).where(eq(profiles.email, formattedEmail)).limit(1)
+            if (existingEmail.length > 0) {
+                return { success: false, message: 'এই ইমেলটি ইতিমধ্যে ব্যবহার করা হয়েছে' }
+            }
         }
 
         const hashedPassword = await hashPassword(password)
-        await db.insert(profiles).values({
+        
+        // টাইপ সেফ ইনসার্ট অবজেক্ট
+        const insertData: {
+            fullName: string;
+            password: string;
+            balance: number;
+            role: string;
+            phone?: string | null;
+            email?: string | null;
+        } = {
             fullName: name.trim(),
-            phone: formattedPhone,
             password: hashedPassword,
             balance: 0,
-            role: 'user'
-        })
+            role: 'user',
+        }
+
+        if (formattedPhone) insertData.phone = formattedPhone
+        if (formattedEmail) insertData.email = formattedEmail
+
+        await db.insert(profiles).values(insertData)
 
         return { success: true }
     } catch (err: any) {
@@ -64,12 +85,12 @@ export async function registerAction(formData: any) {
     }
 }
 
-export async function loginAction(formData: any) {
+export async function loginAction(formData: { identifier: string; password: string }) {
     try {
-        const { phone, password } = formData
+        const { identifier, password } = formData
 
-        if (!phone || !password) {
-            return { success: false, message: 'মোবাইল নম্বর এবং পাসওয়ার্ড দিন' }
+        if (!identifier || !password) {
+            return { success: false, message: 'মোবাইল নম্বর/ইমেল এবং পাসওয়ার্ড দিন' }
         }
         if (typeof password !== 'string' || password.length > 72) {
             return { success: false, message: 'পাসওয়ার্ড খুব বড়' }
@@ -79,11 +100,16 @@ export async function loginAction(formData: any) {
             return { success: false, message: 'সার্ভারে DATABASE_URL যুক্ত করা হয়নি!' }
         }
 
-        const formattedPhone = normalizePhone(phone)
+        const input = identifier.trim()
+        const isEmail = input.includes('@')
+        const formattedInput = isEmail ? input.toLowerCase() : normalizePhone(input)
 
-        const user = await db.select().from(profiles).where(eq(profiles.phone, formattedPhone)).limit(1)
+        const user = await db.select().from(profiles)
+            .where(sql`${profiles.phone} = ${formattedInput} OR ${profiles.email} = ${formattedInput}`)
+            .limit(1)
+
         if (user.length === 0) {
-            return { success: false, message: 'এই নম্বরে কোনো অ্যাকাউন্ট পাওয়া যায়নি' }
+            return { success: false, message: 'এই নম্বর বা ইমেলে কোনো অ্যাকাউন্ট পাওয়া যায়নি' }
         }
 
         const isMatch = await comparePassword(password, user[0].password)
@@ -91,7 +117,12 @@ export async function loginAction(formData: any) {
             return { success: false, message: 'পাসওয়ার্ড ভুল হয়েছে' }
         }
 
-        const token = await createToken({ id: user[0].id, phone: user[0].phone, role: user[0].role })
+        const token = await createToken({ 
+            id: user[0].id, 
+            identifier: user[0].phone || user[0].email, 
+            role: user[0].role 
+        })
+        
         const cookieStore = await cookies()
         cookieStore.set('session', token, {
             httpOnly: true,
@@ -123,7 +154,6 @@ export async function getProfile() {
     const user = await db.select().from(profiles).where(eq(profiles.id, (session as any).id)).limit(1)
     
     if (user.length === 0) return null
-    // Security: Exclude hashed password from the response
     const { password, ...safeUser } = user[0]
     return safeUser
 }
@@ -139,13 +169,12 @@ export async function placeOrderAction(service: { id: string, title: string, pri
     }
 
     try {
-        // ✅ transaction() ছাড়া — neon-http compatible
         await db.update(profiles)
             .set({ balance: sql`${profiles.balance} - ${service.price}` })
             .where(eq(profiles.id, (session as any).id))
 
         await db.insert(orders).values({
-            userId: profile[0].phone,
+            userId: profile[0].phone || profile[0].email || 'user',
             serviceId: service.id,
             serviceName: service.title,
             price: service.price,
@@ -165,24 +194,30 @@ export async function placeOrderAction(service: { id: string, title: string, pri
 export async function getOrdersAction() {
     const session = await getSession()
     if (!session) return []
+    const profile = await db.select().from(profiles).where(eq(profiles.id, (session as any).id)).limit(1)
+    if (profile.length === 0) return []
+
+    const identifier = profile[0].phone || profile[0].email || ''
+
     return await db.select().from(orders)
-        .where(eq(orders.userId, (session as any).phone))
+        .where(eq(orders.userId, identifier))
         .orderBy(desc(orders.createdAt))
 }
 
 // --- Balance ---
-// ✅ Recharge করলে সাথে সাথে balance add হবে
 export async function addBalanceAction(amount: number, trxId: string, method: string, description: string) {
     const session = await getSession()
     if (!session) return { success: false, message: 'লগইন করুন' }
 
-    const userPhone = (session as any).phone
-    const userId = (session as any).id
+    const profile = await db.select().from(profiles).where(eq(profiles.id, (session as any).id)).limit(1)
+    if (profile.length === 0) return { success: false, message: 'ইউজার পাওয়া যায়নি' }
+
+    const identifier = profile[0].phone || profile[0].email || ''
+    const userId = profile[0].id
 
     try {
-        // ✅ transaction() ছাড়া — neon-http compatible
         await db.insert(transactions).values({
-            userId: userPhone,
+            userId: identifier,
             amount,
             method,
             trxId,
@@ -218,7 +253,6 @@ export async function getAdminStats() {
     return { transactions: allTransactions, orders: allOrders, users: allUsers }
 }
 
-// ✅ Admin manually approve
 export async function approveTransactionAction(id: number) {
     const session = await getSession()
     if (!session || (session as any).role !== 'admin') return { success: false }
@@ -229,7 +263,7 @@ export async function approveTransactionAction(id: number) {
         if (txn[0].status !== 'pending') return { success: false, message: 'Already processed' }
 
         const amount = Number(txn[0].amount)
-        const userPhone = txn[0].userId as string
+        const userIdentifier = txn[0].userId as string
 
         await db.update(transactions)
             .set({ status: 'approved' })
@@ -237,7 +271,7 @@ export async function approveTransactionAction(id: number) {
 
         await db.update(profiles)
             .set({ balance: sql`${profiles.balance} + ${amount}` })
-            .where(eq(profiles.phone, userPhone))
+            .where(sql`${profiles.phone} = ${userIdentifier} OR ${profiles.email} = ${userIdentifier}`)
 
         revalidatePath('/dashboard')
         revalidatePath('/admin')
@@ -261,24 +295,21 @@ export async function withdrawBalanceAction(amount: number, method: string, rece
     const session = await getSession()
     if (!session) return { success: false, message: 'লগইন করুন' }
 
-    const userPhone = (session as any).phone
-    const userId = (session as any).id
-
-    // Balance চেক
-    const profile = await db.select().from(profiles).where(eq(profiles.id, userId)).limit(1)
+    const profile = await db.select().from(profiles).where(eq(profiles.id, (session as any).id)).limit(1)
     if (profile.length === 0 || profile[0].balance < amount) {
         return { success: false, message: 'পর্যাপ্ত ব্যালেন্স নেই' }
     }
 
+    const identifier = profile[0].phone || profile[0].email || ''
+    const userId = profile[0].id
+
     try {
-        // Balance কাটো
         await db.update(profiles)
             .set({ balance: sql`${profiles.balance} - ${amount}` })
             .where(eq(profiles.id, userId))
 
-        // Transaction record করো (pending — admin approve করবে)
         await db.insert(transactions).values({
-            userId: userPhone,
+            userId: identifier,
             amount,
             method,
             trxId: `WD-${Date.now()}-${userId}`,
@@ -295,7 +326,6 @@ export async function withdrawBalanceAction(amount: number, method: string, rece
     }
 }
 
-// ✅ Notes সহ order update
 export async function updateOrderAction(id: number, status: string, notes: string) {
     const session = await getSession()
     if (!session || (session as any).role !== 'admin') return { success: false }

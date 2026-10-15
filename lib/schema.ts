@@ -2,10 +2,10 @@ import { pgTable, serial, text, timestamp, integer, boolean } from 'drizzle-orm/
 
 export const profiles = pgTable('profiles', {
   id: serial('id').primaryKey(),
-  phone: text('phone').notNull().unique(),
+  phone: text('phone').unique(), // .notNull() তুলে দেওয়া হলো যাতে শুধু ইমেল দিয়েও রেজিস্ট্রেশন করা যায়
   password: text('password').notNull(),
   fullName: text('full_name'),
-  email: text('email'),
+  email: text('email').unique(), // ইমেল ইউনিক করা হলো
   nid: text('nid'),
   balance: integer('balance').default(0).notNull(),
   role: text('role').default('user').notNull(),
