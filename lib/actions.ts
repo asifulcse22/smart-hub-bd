@@ -338,3 +338,33 @@ export async function updateOrderAction(id: number, status: string, notes: strin
     revalidatePath('/dashboard')
     return { success: true }
 }
+
+export async function resetPasswordAction(formData: { identifier: string; newPassword: string }) {
+    try {
+        const { identifier, newPassword } = formData
+        if (!identifier || !newPassword) {
+            return { success: false, message: 'তথ্যগুলো সঠিকভাবে পূরণ করুন' }
+        }
+        const input = identifier.trim()
+        const isEmail = input.includes('@')
+        const formattedInput = isEmail ? input.toLowerCase() : normalizePhone(input)
+
+        const user = await db.select().from(profiles)
+            .where(sql`${profiles.phone} = ${formattedInput} OR ${profiles.email} = ${formattedInput}`)
+            .limit(1)
+
+        if (user.length === 0) {
+            return { success: false, message: 'এই নম্বর বা ইমেলে কোনো অ্যাকাউন্ট পাওয়া যায়নি' }
+        }
+
+        const hashedPassword = await hashPassword(newPassword)
+        await db.update(profiles)
+            .set({ password: hashedPassword })
+            .where(eq(profiles.id, user[0].id))
+
+        return { success: true, message: 'পাসওয়ার্ড সফলভাবে পরিবর্তন করা হয়েছে!' }
+    } catch (err) {
+        console.error('Reset Password Error:', err)
+        return { success: false, message: 'পাসওয়ার্ড পরিবর্তন করতে সমস্যা হয়েছে' }
+    }
+}
