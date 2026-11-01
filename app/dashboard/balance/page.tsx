@@ -35,7 +35,7 @@ export default function RechargePage() {
 
     const paymentNumbers = {
         bKash: "বিকাশ সীমা সেষ নগদ লেনদেন চালু আছে",
-        Nagad: "01781200267"
+        Nagad: "01350084236"
     };
 
     const handleCopy = (num: string, type: string) => {
