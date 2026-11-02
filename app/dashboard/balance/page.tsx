@@ -20,11 +20,11 @@ export default function RechargePage() {
         amount: ""
     });
     const [rechargeError, setRechargeError] = useState("");
-    const [rechargeMethod, setRechargeMethod] = useState<"bKash" | "Nagad">("bKash");
+    const [rechargeMethod, setRechargeMethod] = useState<"Nagad" | "bKash">("Nagad");
     const [rechargeCopied, setRechargeCopied] = useState<string | null>(null);
     const [rechargeSubmitting, setRechargeSubmitting] = useState(false);
 
-    const [withdrawMethod, setWithdrawMethod] = useState<"bKash" | "Nagad">("bKash");
+    const [withdrawMethod, setWithdrawMethod] = useState<"Nagad" | "bKash">("Nagad");
     const [withdrawForm, setWithdrawForm] = useState({ receiverNumber: "", amount: "" });
     const [withdrawError, setWithdrawError] = useState("");
     const [withdrawSubmitting, setWithdrawSubmitting] = useState(false);
@@ -173,7 +173,7 @@ export default function RechargePage() {
                             <p style={{ color: "#6b7280", fontWeight: "700", fontSize: "14px", margin: 0 }}>
                                 {tab === "recharge"
                                     ? "আপনার একাউন্টে ব্যালেন্স যোগ করতে নিচের ফর্মটি পূরণ করুন"
-                                    : "আপনার ব্যালেন্স থেকে bKash বা Nagad এ টাকা উইথড্র করুন"
+                                    : "আপনার ব্যালেন্স থেকে Nagad বা bKash এ টাকা উইথড্র করুন"
                                 }
                             </p>
                         </div>
@@ -222,7 +222,6 @@ export default function RechargePage() {
                         }}>
                             {tab === "recharge" && (
                                 <>
-                                    {/* ✅ BUG FIX: onClick এ amount রিসেট করা হয়েছে */}
                                     <div style={{
                                         display: "flex", background: "rgba(236,253,245,0.5)",
                                         padding: "6px", borderRadius: "24px",
@@ -233,7 +232,7 @@ export default function RechargePage() {
                                                 key={type}
                                                 onClick={() => {
                                                     setAccountType(type);
-                                                    setRechargeForm(prev => ({ ...prev, amount: "" })); // ✅ FIX
+                                                    setRechargeForm(prev => ({ ...prev, amount: "" }));
                                                 }}
                                                 style={{
                                                     flex: 1, padding: "14px", borderRadius: "18px", border: "none",
@@ -312,7 +311,6 @@ export default function RechargePage() {
                                         <button
                                             type="button"
                                             onClick={() => {
-                                                // amount শুধু subAdmin view-এর জন্য set হয়, main form এ যাবে না
                                                 setRechargeForm(prev => ({ ...prev, amount: "2950" }));
                                                 setView("subAdmin");
                                             }}
@@ -332,12 +330,13 @@ export default function RechargePage() {
                                         </button>
                                     </div>
 
+                                    {/* ✅ পরিবর্তন: Nagad বাটন প্রথমে, bKash বাটন দ্বিতীয় */}
                                     <div style={{
                                         display: "flex", background: "rgba(236,253,245,0.5)",
                                         padding: "6px", borderRadius: "24px",
                                         marginBottom: "24px", border: "1px solid #d1fae5"
                                     }}>
-                                        {(["bKash", "Nagad"] as const).map((m) => (
+                                        {(["Nagad", "bKash"] as const).map((m) => (
                                             <button
                                                 key={m}
                                                 onClick={() => setRechargeMethod(m)}
@@ -350,7 +349,7 @@ export default function RechargePage() {
                                                     boxShadow: rechargeMethod === m ? "0 8px 20px rgba(5,150,105,0.3)" : "none"
                                                 }}
                                             >
-                                                {m === "bKash" ? "bKash বিকাশ" : "Nagad নগদ"}
+                                                {m === "Nagad" ? "Nagad নগদ" : "bKash বিকাশ"}
                                             </button>
                                         ))}
                                     </div>
@@ -512,8 +511,9 @@ export default function RechargePage() {
                                                 <h3 style={{ fontSize: "12px", fontWeight: "900", color: "#0369a1", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 16px" }}>
                                                     উইথড্র মাধ্যম বেছে নিন
                                                 </h3>
+                                                {/* ✅ পরিবর্তন: Nagad বাটন প্রথমে, bKash বাটন দ্বিতীয় */}
                                                 <div style={{ display: "flex", gap: "24px" }}>
-                                                    {(["bKash", "Nagad"] as const).map((m) => {
+                                                    {(["Nagad", "bKash"] as const).map((m) => {
                                                         const isActive = withdrawMethod === m;
                                                         return (
                                                             <button
@@ -521,10 +521,10 @@ export default function RechargePage() {
                                                                 style={{ background: "none", border: "none", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", padding: 0 }}
                                                             >
                                                                 <div style={{ width: "64px", height: "64px", background: isActive ? "linear-gradient(135deg, #0369a1 0%, #0284c7 100%)" : "#e0f2fe", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: isActive ? "0 8px 20px rgba(3,105,161,0.25)" : "none", transition: "all 0.2s" }}>
-                                                                    {m === "bKash" ? <Wallet size={24} color={isActive ? "white" : "#0369a1"} /> : <ArrowDownCircle size={24} color={isActive ? "white" : "#0369a1"} />}
+                                                                    {m === "Nagad" ? <ArrowDownCircle size={24} color={isActive ? "white" : "#0369a1"} /> : <Wallet size={24} color={isActive ? "white" : "#0369a1"} />}
                                                                 </div>
                                                                 <span style={{ fontSize: "13px", fontWeight: "800", color: isActive ? "#0369a1" : "#6b7280" }}>
-                                                                    {m === "bKash" ? "bKash বিকাশ" : "Nagad নগদ"}
+                                                                    {m === "Nagad" ? "Nagad নগদ" : "bKash বিকাশ"}
                                                                 </span>
                                                             </button>
                                                         );
@@ -627,7 +627,7 @@ export default function RechargePage() {
                     <>
                         <button
                             onClick={() => {
-                                setRechargeForm(prev => ({ ...prev, amount: "" })); // ✅ back গেলেও amount রিসেট
+                                setRechargeForm(prev => ({ ...prev, amount: "" }));
                                 setView("main");
                             }}
                             style={{ display: "flex", alignItems: "center", gap: "8px", color: "#4f46e5", background: "none", border: "none", cursor: "pointer", fontWeight: "800", fontSize: "14px", marginBottom: "24px", transition: "color 0.2s" }}
@@ -654,13 +654,14 @@ export default function RechargePage() {
                                 <span style={{ fontSize: "38px", fontWeight: "900" }}>৳২,৯৫০</span>
                             </div>
 
+                            {/* ✅ পরিবর্তন: সাব-এডমিন ভিউতেও Nagad বাটন প্রথমে, bKash বাটন দ্বিতীয় */}
                             <div style={{ display: "flex", background: "rgba(224,231,255,0.4)", padding: "6px", borderRadius: "24px", marginBottom: "24px", border: "1px solid #e0e7ff" }}>
-                                {(["bKash", "Nagad"] as const).map((m) => (
+                                {(["Nagad", "bKash"] as const).map((m) => (
                                     <button
                                         key={m} onClick={() => setRechargeMethod(m)}
                                         style={{ flex: 1, padding: "14px", borderRadius: "18px", border: "none", background: rechargeMethod === m ? "#4f46e5" : "transparent", color: rechargeMethod === m ? "white" : "#4f46e5", cursor: "pointer", fontWeight: "900", fontSize: "14px", transition: "all 0.3s ease", boxShadow: rechargeMethod === m ? "0 8px 20px rgba(79,70,229,0.2)" : "none" }}
                                     >
-                                        {m === "bKash" ? "bKash বিকাশ" : "Nagad নগদ"}
+                                        {m === "Nagad" ? "Nagad নগদ" : "bKash বিকাশ"}
                                     </button>
                                 ))}
                             </div>
@@ -746,7 +747,7 @@ export default function RechargePage() {
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        setRechargeForm(prev => ({ ...prev, amount: "" })); // ✅ back গেলেও amount রিসেট
+                                        setRechargeForm(prev => ({ ...prev, amount: "" }));
                                         setView("main");
                                     }}
                                     style={{ background: "transparent", border: "2px solid #e0e7ff", color: "#6b7280", padding: "14px", borderRadius: "16px", cursor: "pointer", fontSize: "14px", fontWeight: "700", transition: "all 0.3s ease" }}
