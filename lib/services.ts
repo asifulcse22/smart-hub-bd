@@ -86,6 +86,7 @@ export const services: Service[] = [
   { id: 'water-bill', title: 'পানি বিল', titleEn: 'Water Bill', description: 'ওয়াসা পানি বিলের তথ্য', icon: '💧', color: 'bg-blue-400', category: 'other', price: 20, inputLabel: 'একাউন্ট নাম্বার', inputPlaceholder: 'ওয়াসা একাউন্ট নাম্বার দিন' },
   { id: 'gas-bill', title: 'গ্যাস বিল', titleEn: 'Gas Bill', description: 'তিতাস/বাখরাবাদ গ্যাস বিল', icon: '🔥', color: 'bg-orange-400', category: 'other', price: 20, inputLabel: 'গ্যাস একাউন্ট নাম্বার', inputPlaceholder: 'গ্যাস একাউন্ট নাম্বার দিন' },
   { id: 'marriage-cert', title: 'বিবাহ সনদ', titleEn: 'Marriage Certificate', description: 'কাবিননামা ও বিবাহ নিবন্ধন', icon: '💍', color: 'bg-rose-500', category: 'other', price: 300, inputLabel: 'নাম ও বিবাহের তারিখ', inputPlaceholder: 'বর/কনের নাম / বিবাহের তারিখ দিন' },
+
 ]
 
 export const categories = [

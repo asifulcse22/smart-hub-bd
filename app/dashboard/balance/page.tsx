@@ -34,7 +34,7 @@ export default function RechargePage() {
     const maxWithdraw = 10000;
 
     const paymentNumbers = {
-        bKash: "বিকাশ সীমা সেষ নগদ লেনদেন চালু আছে",
+        bKash: "01984580548",
         Nagad: "01350084236"
     };
 
