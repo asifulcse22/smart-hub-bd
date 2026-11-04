@@ -1,12 +1,21 @@
 {
   "presets": [
-    ["next/babel", {
-      "preset-env": {
-        "targets": {
-          "node": "current"
-        },
-        "exclude": ["transform-async-to-generator", "transform-regenerator"]
+    [
+      "next/babel",
+      {
+        "preset-env": {
+          "targets": {
+            "node": "current"
+          },
+          "exclude": [
+            "transform-async-to-generator",
+            "transform-regenerator"
+          ]
+        }
       }
-    }]
+    ]
+  ],
+  "plugins": [
+    "@babel/plugin-transform-private-methods"
   ]
 }
